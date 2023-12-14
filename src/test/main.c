@@ -82,7 +82,23 @@ void identify_instruction(int instruction) {
                     break;
             }
             break;
-        
+        case 0x23:
+             printf("Opcode: S-Type\n");
+            switch (funct3)
+            {
+            case 0x0:
+                 printf("Opcode: SB \n");
+                break;
+            case 0x1:
+                 printf("Opcode: SH \n");
+                break;
+            case 0x2:
+                 printf("Opcode: SW \n");
+                break;
+            default:
+                break;
+            }
+            break;
         case 0x33:
             printf("Opcode: R-Type\n");
             switch (funct3) {
@@ -222,13 +238,28 @@ void identify_instruction(int instruction) {
             printf("Opcode: JALR (Jump and Link Register)\n");
             break;
         case 0x63:
+            printf("Opcode: B-Type\n");
             switch (funct3) {
                 case 0x0:
-                    printf("Opcode: BEQ (Branch Equal)\n");
+                    printf("Opcode: BEQ  \n");
                     break;
-                // Add cases for other I-type instructions as needed
+                case 0x1:
+                    printf("Opcode: BNE \n");
+                    break;
+                case 0x4:
+                    printf("Opcode: BLT \n");
+                    break;
+                case 0x5:
+                    printf("Opcode: BGE \n");
+                    break;
+                case 0x6:
+                    printf("Opcode: BLTU \n");
+                    break;
+                case 0x7:
+                    printf("Opcode: BGEU \n");
+                    break;
                 default:
-                    printf("Unknown funct3 for opcode 0x63\n");
+                    printf("Unknown funct3 for opcode B-Type\n");
                     break;
             }
             break;
