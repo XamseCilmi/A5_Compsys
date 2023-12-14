@@ -15,6 +15,74 @@ void identify_instruction(int instruction) {
 
     switch (opcode) {
         // R-Type M-extention
+        case 0x03:
+            printf("Opcode: I-Type\n");
+            switch (funct3)
+            {
+            case 0x0:
+                printf("opcode:LB \n");
+                break;
+            case 0x1:
+                printf("opcode: LH\n");
+                break;
+            case 0x2:
+                printf("opcode: LW\n");
+                break;
+            case 0x4:
+                printf("opcode:LBU \n");
+                break;
+            case 0x5:
+                printf("opcode:LHU \n");
+                break;
+            default:
+                printf("Unknown funct7 for L I-type\n");
+                break;
+            }
+            break;
+        case 0x13:
+            printf("Opcode: I-Type \n");
+            switch (funct3){
+                case 0x0:
+                    printf("opcode:ADDI \n");
+                    break;
+                case 0x1:
+                    printf("opcode:SLLI \n");
+                    break;
+                case 0x2:
+                    printf("opcode: SLTI\n");
+                    break;
+                case 0x3:
+                    printf("opcode: SLTIU \n");
+                    break;
+                case 0x4:
+                    printf("opcode:XORI \n");
+                    break;
+                case 0x5:
+                    switch (funct7){
+                    case 0x0:
+                        printf("opcode:SRLI \n");
+                        break;
+                    case 0x20:
+                        printf("opcode:SRAI \n");
+                        break;
+                    default:
+                        printf("Unknown funct7 for SRLI/SRAI I-type\n");
+                     break;
+                    }
+                    break;
+
+                case 0x06:
+                    printf("opcode:ORI \n");
+                    break;
+                case 0x7:
+                    printf("opcode:ANDI \n");
+                    break;
+                default:
+                    printf("Unknown funct7 for L I-type\n");
+                    break;
+            }
+            break;
+        
         case 0x33:
             printf("Opcode: R-Type\n");
             switch (funct3) {
@@ -189,27 +257,22 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Usage: %s <instruction>\n", argv[0]);
         return 1;
     }
-    int opcode = 0x33;
+    int opcode = 0x13;
     int funct3 = 0;
-    int i = 0;
     int instructions;
     for ( funct3 = 0; funct3 < 8; funct3++)
     {
         /* code */
-        for ( i = 0; i < 3; i++)
+        instructions = generate_instruction(opcode,funct3,0x0);
+        identify_instruction(instructions);
+        if (funct3 == 0x3)
         {
-            if (i == 0){
-                instructions = generate_instruction(opcode,funct3,0x00);
-            }
-            if (i == 1){
-                instructions = generate_instruction(opcode,funct3,0x01);
-            }
-            if (i == 2){
-                int funct7 = 1<<5;
-                instructions = generate_instruction(opcode,funct3,funct7);
-            }
+            int funct7 = 1 << 5;
+            instructions = generate_instruction(opcode,funct3,funct7);
             identify_instruction(instructions);
         }
+       
+        
         
     }
     return 1;
