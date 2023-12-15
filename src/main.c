@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
+#include <decode.h>
 void terminate(const char *error)
 {
   printf("%s\n", error);
@@ -52,7 +52,7 @@ int pass_args_to_program(struct memory* mem, int argc, char* argv[]) {
 }
 
 int main(int argc, char *argv[])
-{
+{ /*
   struct memory *mem = memory_create();
   argc = pass_args_to_program(mem, argc, argv);
   if (argc == 2 || argc == 4)
@@ -97,4 +97,5 @@ int main(int argc, char *argv[])
     terminate("Missing operands");
     memory_delete(mem);
   }
+  */
 }

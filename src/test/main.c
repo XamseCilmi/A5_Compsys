@@ -4,6 +4,18 @@
 #include <time.h>
 #include <assert.h>
 #include <stdint.h>
+// implement register 0x0 - 0x031
+#define REGISTER_COUNT 32
+// init register
+int registers_data[REGISTER_COUNT] = {0}; 
+int rd, r1, r2;
+
+void decode_Rtype_instruction(int instruction, int *rd, int *r1, int *r2) {
+    *rd = (instruction >> 7) & 0x1F;       // Extract bits 11:7 for rd
+    *r1 = (instruction >> 15) & 0x1F;      // Extract bits 19:15 for r1
+    *r2 = (instruction >> 20) & 0x1F;      // Extract bits 24:20 for r2
+    //*imm = (instruction >> 20) & 0xFFF;    // Extract bits 31:20 for imm[11:0]
+}
 void identify_instruction(int instruction) {
     int opcode = instruction & 0x7F;   // Extract the opcode (lowest 7 bits)
     int funct3 = (instruction >> 12) & 0x7;  // Extract the funct3 field (bits 12-14)
@@ -101,17 +113,24 @@ void identify_instruction(int instruction) {
             break;
         case 0x33:
             printf("Opcode: R-Type\n");
+            decode_Rtype_instruction(instruction,rd,r1,r2);
             switch (funct3) {
             case 0x0:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = registers_data[r1] + registers_data[r2];
                         printf("Opcode: ADD (Addition)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x01:
+                    registers_data[rd] = registers_data[r1] * registers_data[r2];
                         printf("Opcode: MUL (Multiply)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x20:
+                        registers_data[rd] = registers_data[r1] - registers_data[r2];
                         printf("Opcode: SUB (Subtraction)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     default:
                         printf("Unknown funct7 for MUL/ADD/SUB\n");
@@ -121,10 +140,14 @@ void identify_instruction(int instruction) {
             case 0x1:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = registers_data[r1] << registers_data[r2];
                         printf("Opcode: SLL (Shift Left Logical)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x01:
+                        registers_data[rd] = (registers_data[r1]*registers_data[r2]) >> 32;
                         printf("Opcode: MULH (Multiply High)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     default:
                         printf("Unknown funct7 for SLL/MULH\n");
@@ -134,10 +157,14 @@ void identify_instruction(int instruction) {
             case 0x2:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = (registers_data[r1] < registers_data[r2]) ? 1: 0;
                         printf("Opcode: SLT (Set Less Than)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x01:
+                        registers_data[rd] = (registers_data[r1]*registers_data[r2]) >> 32;
                         printf("Opcode: MULHSU (Multiply High Signed Unsigned)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     default:
                         printf("Unknown funct7 for SLT/MULHSU\n");
@@ -147,11 +174,15 @@ void identify_instruction(int instruction) {
             case 0x3:
                 switch (funct7){
                     case 0x00:
+                        registers_data[rd] = (registers_data[r1] < registers_data[r2]) ? 1: 0;
                         printf("Opcode: SLTU (Set Less Than Unsigned)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
             
                     case 0x01:
+                        registers_data[rd] = (registers_data[r1]*registers_data[r2]) >> 32;
                         printf("Opcode: MULHU (Multiply High Signed Unsigned)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
             
                 default:
@@ -163,10 +194,14 @@ void identify_instruction(int instruction) {
             case 0x4:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = registers_data[r1] ^ registers_data[r2];
                         printf("Opcode: XOR (Bitwise XOR)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x01:
+                        registers_data[rd] = registers_data[r1]/registers_data[r2];
                         printf("Opcode: DIV (Divide)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     default:
                         printf("Unknown funct7 for XOR/DIVIDE\n");
@@ -176,13 +211,19 @@ void identify_instruction(int instruction) {
             case 0x5:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = registers_data[r1] >> registers_data[r2];
                         printf("Opcode: SRL (Shift Right Logical)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x01:
+                        registers_data[rd] = registers_data[r1]/registers_data[r2];
                         printf("Opcode: DIVU (Divide Unsigned)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x20:
+                        registers_data[rd] = registers_data[r1] >> registers_data[r2];
                         printf("Opcode: SRA (Shift Right Arithmetic)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     default:
                         printf("Unknown funct7 for SRL/SRA\n");
@@ -192,10 +233,14 @@ void identify_instruction(int instruction) {
             case 0x6:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = registers_data[r1] | registers_data[r2];
                         printf("Opcode: OR (Bitwise OR)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     case 0x01:
+                        registers_data[rd] = registers_data[r1]%registers_data[r2];
                         printf("Opcode: REM (Remainder)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;
                     default:
                         printf("Unknown funct7 for OR\n");
@@ -205,10 +250,13 @@ void identify_instruction(int instruction) {
             case 0x7:
                 switch (funct7) {
                     case 0x00:
+                        registers_data[rd] = registers_data[r1] & registers_data[r2];
                         printf("Opcode: AND (Bitwise AND)\n");
                         break;
                     case 0x01:
+                        registers_data[rd] = registers_data[r1]%registers_data[r2];
                         printf("Opcode: REMU (Remainder Unsigned)\n");
+                        printf("Result: %d\n", registers_data[rd]);
                         break;    
                     default:
                         printf("Unknown funct7 for AND\n");
@@ -224,6 +272,7 @@ void identify_instruction(int instruction) {
         // Add cases for other opcodes as needed
         case 0x37:
             printf("Opcode: LUI (Load Upper Immediate)\n");
+            
             break;
         // I - Type
         case 0x17:
