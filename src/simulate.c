@@ -87,7 +87,6 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             int rd = (instruction >> 7) & 0x1F;
             uint32_t imm32_20 = (instruction >> 20) & 0x7F;// Extract the funct7 field (bits 20-32)
             uint32_t adr = read_register(imm32_20) + read_register(rs1);
-            printf("Opcode: I-Type\n");
             switch (funct3)
             {
             case 0x0:
@@ -96,9 +95,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 // get the sign of the byte 
                 uint32_t sign = (byte <0x07)* 0xff;
                 /// read_register the byte into memory
-                write_register(rd,sign + byte);
-                printf("opcode:LB \n");
-                printf("Result: %d\n", read_register(rd));
+                write_register(rd,sign + byte);;
                 break;
             case 0x1:
                 // load the halfword from memory
@@ -107,29 +104,20 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 uint32_t sign = (halfword <0x0f)* 0xffff;
                 /// read_register the halfword into memory
                 write_register(rd, sign + halfword);
-                printf("opcode: LH\n");
-                printf("Result: %d\n", read_register(rd));
                 break;
             case 0x2:
                 // Load a Word from Memoery
                 write_register(rd,memory_rd_w(mem, adr));
-                printf("opcode: LW\n");
-                printf("Result: %d\n", read_register(rd));
                 break;
             case 0x4:
                 // Load A Byte from memory Unsigned
                 write_register(rd, memory_rd_w(mem, adr));
-                printf("opcode:LBU \n");
-                printf("Result: %d\n", read_register(rd));
                 break;
             case 0x5:
                 // Load Unsigned Halfword from memory
                 write_register(rd,memory_rd_w(mem, adr));
-                printf("opcode:LHU \n");
-                printf("Result: %d\n", read_register(rd));
                 break;
             default:
-                printf("Unknown funct7 for L I-type\n");
                 break;
             }
         }
