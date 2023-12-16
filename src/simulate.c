@@ -129,7 +129,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             {
             case 0x0:
                 // load the byte from memory
-                uint32_t byte = memory_rd_w(mem, adr);
+                uint32_t byte = memory_rd_b(mem, adr);
                 // get the sign of the byte 
                 uint32_t sign = (byte <0x07)* 0xff;
                 /// read_register the byte into memory
@@ -137,7 +137,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 break;
             case 0x1:
                 // load the halfword from memory
-                uint32_t halfword = memory_rd_w(mem, adr);
+                uint32_t halfword = memory_rd_h(mem, adr);
                 // get the sign of the halfword 
                 uint32_t sign = (halfword <0x0f)* 0xffff;
                 /// read_register the halfword into memory
@@ -149,11 +149,11 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 break;
             case 0x4:
                 // Load A Byte from memory Unsigned
-                write_register(rd, memory_rd_w(mem, adr));
+                write_register(rd, memory_rd_b(mem, adr));
                 break;
             case 0x5:
                 // Load Unsigned Halfword from memory
-                write_register(rd,memory_rd_w(mem, adr));
+                write_register(rd,memory_rd_h(mem, adr));
                 break;
             default:
                 break;
