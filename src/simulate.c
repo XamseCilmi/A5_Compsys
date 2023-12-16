@@ -3,7 +3,7 @@
 #include "assembly.h"
 #include <stdio.h>
 #include <simulate.h>
-
+#include <stdint.h>
 // We define all of the opcodes from the different instructions to implement
 // by reading the opcode value in the tables p. 104 & 105 in the riscv spec.
 // The values are in binary and we translate them to hex as they are shorter
@@ -53,8 +53,63 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
         int opcode = instruction & 0x7F;
 
        // RV321 Base Instruction Set
-       // .....
-
+      // .....
+        // Load Instructions
+        if (opcode == OPCODE_LB_LH_LW_LBU_LHU)
+        {
+            // Retrive the addresse
+            int funct3 = (instruction >> 12) & 0x7;
+            int rs1 = (instruction >> 15) & 0x1F;
+            int rd = (instruction >> 7) & 0x1F;
+            uint32_t imm32_20 = (instruction >> 20) & 0x7F;// Extract the funct7 field (bits 20-32)
+            uint32_t adr = read_register(imm32_20) + read_register(rs1);
+            printf("Opcode: I-Type\n");
+            switch (funct3)
+            {
+            case 0x0:
+                // load the byte from memory
+                uint32_t byte = memory_rd_w(mem, adr);
+                // get the sign of the byte 
+                uint32_t sign = (byte <0x07)* 0xff;
+                /// read_register the byte into memory
+                read_register(rd,sign + byte);
+                printf("opcode:LB \n");
+                printf("Result: %d\n", read_register(rd));
+                break;
+            case 0x1:
+                // load the halfword from memory
+                uint32_t halfword = memory_rd_w(mem, adr);
+                // get the sign of the halfword 
+                uint32_t sign = (halfword <0x0f)* 0xffff;
+                /// read_register the halfword into memory
+                read_register(rd, sign + halfword);
+                printf("opcode: LH\n");
+                printf("Result: %d\n", read_register(rd));
+                break;
+            case 0x2:
+                // Load a Word from Memoery
+                read_register(rd,memory_rd_w(mem, adr));
+                printf("opcode: LW\n");
+                printf("Result: %d\n", read_register(rd));
+                break;
+            case 0x4:
+                // Load A Byte from memory Unsigned
+                read_register(rd, memory_rd_w(mem, adr));
+                printf("opcode:LBU \n");
+                printf("Result: %d\n", read_register(rd));
+                break;
+            case 0x5:
+                // Load Unsigned Halfword from memory
+                read_register(rd,memory_rd_w(mem, adr));
+                printf("opcode:LHU \n");
+                printf("Result: %d\n", read_register(rd));
+                break;
+            default:
+                printf("Unknown funct7 for L I-type\n");
+                break;
+            }
+        }
+        
 
 
        // RV32M Standard Extension
@@ -69,7 +124,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             if (funct7 == FUNCT7_MUL_DIV_REM) {
                 switch (funct3) {
                     case FUNCT3_MUL:
-                        write_register(rd, read_register(rs1) * read_register(rs2));
+                        read_register_register(rd, read_register(rs1) * read_register(rs2));
                         if (log_file) {
                             // fprintf();
                         }
