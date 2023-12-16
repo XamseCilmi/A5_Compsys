@@ -77,6 +77,34 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             uint32_t rd = (instruction >> 7) & 0x1F;
             write_register(rd, imm32_12 << 12);
         }
+        // Store Instructions
+        if (opcode == OPCODE_SB_SH_SW)
+        {
+            uint32_t imm4_0 = (instruction >> 7) & 0x1F; // Extract the imm4_0 field (bits 7-11)
+            uint32_t imm32_25 = (instruction >> 25) & 0x7F; // Extract the funct7 field (bits 25-32)
+            uint32_t funct3 = (instruction >> 12) & 0x7;     // Extract the funct3 field (bits 12-14)
+            uint32_t rs1 = (instruction >> 15) & 0x1F;       // Extract bits 19:15
+            uint32_t rs2 = (instruction >> 20) & 0x1F; // Extract bits 24:20
+            uint32_t adr = read_register(rs1) +imm32_25 +imm4_0; // get memory location and add offset
+            switch (funct3)
+            {
+            case 0x0:
+                memory_wr_b(mem,adr, read_register(rs2));
+                // printf("Opcode: SB \n");
+                break;
+            case 0x1:
+                memory_wr_h(mem,adr, read_register(rs2));
+                // printf("Opcode: SH \n");
+                break;
+            case 0x2:
+                memory_wr_w(mem,adr, read_register(rs2));
+                // printf("Opcode: SW \n");
+                break;
+            default:
+                break;
+            }
+            break;
+        }
         
         // Load Instructions
         if (opcode == OPCODE_LB_LH_LW_LBU_LHU)
@@ -86,7 +114,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             int rs1 = (instruction >> 15) & 0x1F;
             int rd = (instruction >> 7) & 0x1F;
             uint32_t imm32_20 = (instruction >> 20) & 0x7F;// Extract the funct7 field (bits 20-32)
-            uint32_t adr = read_register(imm32_20) + read_register(rs1);
+            uint32_t adr = imm32_20 + read_register(rs1);
             switch (funct3)
             {
             case 0x0:
