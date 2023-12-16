@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <decode.h>
 void terminate(const char *error)
 {
   printf("%s\n", error);
