@@ -1,8 +1,8 @@
-
 #include "memory.h"
 #include "assembly.h"
 #include <stdio.h>
 #include <simulate.h>
+#include <stdint.h>
 
 // We define all of the opcodes from the different instructions to implement
 // by reading the opcode value in the tables p. 104 & 105 in the riscv spec.
@@ -43,8 +43,24 @@
 #define FUNCT3_REM     0x6
 #define FUNCT3_REMU    0x7
 
+// 32 bit register as RISC-V is 32 bit
+uint32_t registers[32];
+
+// Writes a 32 bit value at specified index 
+void write_register(int register_index, uint32_t value) {
+    if (register_index != 0) { // // Register 0 is always 0.
+        registers[register_index] = value;
+    }
+}
+
+// Reads the register at specified index
+uint32_t read_register(int register_index) {
+    return registers[register_index];
+}
+
+
 long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE *log_file) {
-    int pc = start_addr; // Program counter
+    uint32_t pc = start_addr; // Program counter
 
     while (1) {
         int instruction = memory_rd_w(mem, pc);
@@ -60,32 +76,75 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
        // RV32M Standard Extension
         if (opcode == OPCODE_MUL_DIV_REM) {  
             // The instructions in this extension are all of R-type.
-            int funct3 = (instruction >> 12) & 0x7;
-            int funct7 = (instruction >> 25) & 0x7F;
-            int rs1 = (instruction >> 15) & 0x1F;
-            int rs2 = (instruction >> 20) & 0x1F;
-            int rd = (instruction >> 7) & 0x1F;
-            
+            uint32_t funct3 = (instruction >> 12) & 0x7;
+            uint32_t funct7 = (instruction >> 25) & 0x7F;
+            uint32_t rs1 = (instruction >> 15) & 0x1F;
+            uint32_t rs2 = (instruction >> 20) & 0x1F;
+            uint32_t rd = (instruction >> 7) & 0x1F;
+
+            uint32_t rs1_value = read_register(rs1);
+            uint32_t rs2_value = read_register(rs2);
+
             if (funct7 == FUNCT7_MUL_DIV_REM) {
                 switch (funct3) {
-                    case FUNCT3_MUL:
-                        write_register(rd, read_register(rs1) * read_register(rs2));
-                        if (log_file) {
-                            // fprintf();
+                    // Following link has been used as help when implementing the instructions
+                    // https://msyksphinz-self.github.io/riscv-isadoc/html/rvm.html
+                    case FUNCT3_MUL: 
+                        uint32_t mul = rs1_value * rs2_value;
+                        write_register(rd, mul);
+                        break;
+                    case FUNCT3_MULH: 
+                        int64_t mulh_rs1_value = (int64_t)(int32_t)rs1_value;
+                        int64_t mulh_rs2_value = (int64_t)(int32_t)rs2_value;
+                        int64_t mulh = mulh_rs1_value * mulh_rs2_value;
+                        write_register(rd, (uint32_t)(mulh >> 32));
+                        break;
+                    case FUNCT3_MULHSU:
+                        // Same as above but unsigned rs2
+                        int64_t mulhsu_rs1_value = (int64_t)(int32_t)rs1_value; 
+                        uint64_t mulhsu_rs2_value = (uint64_t)read_register(rs2_value);
+                        int64_t mulhsu = mulhsu_rs1_value * (int64_t)mulhsu_rs2_value; 
+                        uint32_t upper_bits_mulhsu = (uint32_t)(mulhsu >> 32); 
+                        write_register(rd, upper_bits_mulhsu);
+                        break;
+                    case FUNCT3_DIV:
+                        if (rs2_value == 0 ) {
+                            printf("Division by 0");
+                        }
+                        else {
+                           uint32_t div = rs1_value / rs2_value;
+                           write_register(rd, div);
                         }
                         break;
-                    case FUNCT3_MULH:
-                        
+                    case FUNCT3_DIVU:
+                        uint32_t divu;
+                        if (rs2_value == 0) {
+                            divu = UINT32_MAX; // Division by zero gets largest unsigned value
+                        } else {
+                            divu = rs1_value / rs2_value; 
+                        }
+                        write_register(rd, divu);
                         break;
-                    case FUNCT3_MULHSU
+                    case FUNCT3_REM:
+                        int32_t rem_rs1_value = (int32_t)rs1_value; 
+                        int32_t rem_rs2_value = (int32_t)rs2_value; 
+
+                        int32_t rem;
+                        if (rem_rs2_value == 0) {
+                            rem = rem_rs1_value; 
+                        } else {
+                            rem = rem_rs1_value % rem_rs2_value; 
+                        }
+                        write_register(rd, rem);
                         break;
-                    case FUNCT3_DIV
-                        break;
-                    case FUNCT3_DIVU
-                        break;
-                    case FUNCT3_REM
-                        break;
-                    case FUNCT3_REMU
+                    case FUNCT3_REMU:
+                        uint32_t remu;
+                        if (rs2_value == 0) {
+                            remu = rs1_value;
+                        } else {
+                            remu = rs1_value % rs2_value;
+                        }
+                        write_register(rd, remu);
                         break;
                 }
             }
