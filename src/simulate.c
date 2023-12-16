@@ -2,6 +2,7 @@
 #include "assembly.h"
 #include <stdio.h>
 #include <simulate.h>
+#include <stdint.h>
 
 // We define all of the opcodes from the different instructions to implement
 // by reading the opcode value in the tables p. 104 & 105 in the riscv spec.
@@ -68,7 +69,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
         int opcode = instruction & 0x7F;
 
        // RV321 Base Instruction Set
-      // .....
+       // .....
         // Load Instructions
         if (opcode == OPCODE_LB_LH_LW_LBU_LHU)
         {
@@ -87,7 +88,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 // get the sign of the byte 
                 uint32_t sign = (byte <0x07)* 0xff;
                 /// read_register the byte into memory
-                read_register(rd,sign + byte);
+                write_register(rd,sign + byte);
                 printf("opcode:LB \n");
                 printf("Result: %d\n", read_register(rd));
                 break;
@@ -97,25 +98,25 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 // get the sign of the halfword 
                 uint32_t sign = (halfword <0x0f)* 0xffff;
                 /// read_register the halfword into memory
-                read_register(rd, sign + halfword);
+                write_register(rd, sign + halfword);
                 printf("opcode: LH\n");
                 printf("Result: %d\n", read_register(rd));
                 break;
             case 0x2:
                 // Load a Word from Memoery
-                read_register(rd,memory_rd_w(mem, adr));
+                write_register(rd,memory_rd_w(mem, adr));
                 printf("opcode: LW\n");
                 printf("Result: %d\n", read_register(rd));
                 break;
             case 0x4:
                 // Load A Byte from memory Unsigned
-                read_register(rd, memory_rd_w(mem, adr));
+                write_register(rd, memory_rd_w(mem, adr));
                 printf("opcode:LBU \n");
                 printf("Result: %d\n", read_register(rd));
                 break;
             case 0x5:
                 // Load Unsigned Halfword from memory
-                read_register(rd,memory_rd_w(mem, adr));
+                write_register(rd,memory_rd_w(mem, adr));
                 printf("opcode:LHU \n");
                 printf("Result: %d\n", read_register(rd));
                 break;
@@ -141,11 +142,11 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
 
             if (funct7 == FUNCT7_MUL_DIV_REM) {
                 switch (funct3) {
-                    case FUNCT3_MUL:
-                        write_register(rd, read_register(rs1) * read_register(rs2));
-                        if (log_file) {
-                            // fprintf();
-                        }
+                    // Following link has been used as help when implementing the instructions
+                    // https://msyksphinz-self.github.io/riscv-isadoc/html/rvm.html
+                    case FUNCT3_MUL: 
+                        uint32_t mul = rs1_value * rs2_value;
+                        write_register(rd, mul);
                         break;
                     case FUNCT3_MULH: 
                         int64_t mulh_rs1_value = (int64_t)(int32_t)rs1_value;
