@@ -73,10 +73,20 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
        // Implement LUI
         if (opcode == OPCODE_LUI)
         {
-            uint32_t imm32_12 = (instruction >> 12) & 0x7F; // Extract the funct7 field (bits 12-32)
+            uint32_t imm32_12 = (instruction >> 12) & 0xFFFFF; // Extract the imm field (bits 12-32)
             uint32_t rd = (instruction >> 7) & 0x1F;
             write_register(rd, imm32_12 << 12);
         }
+
+        if (opcode == OPCODE_AUIPC)
+        {
+            uint32_t imm32_12 = (instruction >> 12) & 0xFFFFF; // Extract the imm field (bits 12-32)
+            uint32_t rd = (instruction >> 7) & 0x1F;
+            /// Store offset + pc to rd
+            write_register(rd,(imm32_12 << 12)+pc);
+        }
+        
+
         // Store Instructions
         if (opcode == OPCODE_SB_SH_SW)
         {
