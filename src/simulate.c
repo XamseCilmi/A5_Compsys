@@ -70,6 +70,14 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
 
        // RV321 Base Instruction Set
        // .....
+       // Implement LUI
+        if (opcode == OPCODE_LUI)
+        {
+            uint32_t imm32_12 = (instruction >> 12) & 0x7F; // Extract the funct7 field (bits 12-32)
+            uint32_t rd = (instruction >> 7) & 0x1F;
+            write_register(rd, imm32_12 << 12);
+        }
+        
         // Load Instructions
         if (opcode == OPCODE_LB_LH_LW_LBU_LHU)
         {
