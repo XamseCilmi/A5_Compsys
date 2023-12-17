@@ -73,33 +73,16 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             write_register(rd,(imm32_12 << 12)+pc);
         }
         
-       
-        
-        // Store Instructions
-        if (opcode == OPCODE_SB_SH_SW)
-        {
-            uint32_t imm4_0 = (instruction >> 7) & 0x1F; // Extract the imm4_0 field (bits 7-11)
-            uint32_t imm32_25 = (instruction >> 25) & 0x7F; // Extract the funct7 field (bits 25-32)
-            uint32_t funct3 = (instruction >> 12) & 0x7;     // Extract the funct3 field (bits 12-14)
-            uint32_t rs1 = (instruction >> 15) & 0x1F;       // Extract bits 19:15
-            uint32_t rs2 = (instruction >> 20) & 0x1F; // Extract bits 24:20
-            uint32_t adr = read_register(rs1) +imm32_25 +imm4_0; // get memory location and add offset
-            switch (funct3)
-            {
-            case 0x0:
-                memory_wr_b(mem,adr, read_register(rs2));
-                // printf("Opcode: SB \n");
-                break;
-            case 0x1:
-                memory_wr_h(mem,adr, read_register(rs2));
-                // printf("Opcode: SH \n");
-                break;
-            case 0x2:
-                memory_wr_w(mem,adr, read_register(rs2));
-                // printf("Opcode: SW \n");
-                break;
-            default:
-                break;
+
+        // JAL
+        if (opcode == OPCODE_JAL) {
+            uint32_t rd = (instruction >> 7) & 0x1F;
+            int32_t imm = ((instruction & 0x80000000) >> 11) | // imm[20]
+                        ((instruction & 0x7FE00000) >> 20) | // imm[10:1]
+                        ((instruction & 0x00100000) >> 9) |  // imm[11]
+                        (instruction & 0x000FF000);          // imm[19:12]
+            if (imm & 0x100000) { // sign extend 
+                imm |= 0xFFE00000;
             }
             write_register(rd, pc + 4);
             pc += imm;
