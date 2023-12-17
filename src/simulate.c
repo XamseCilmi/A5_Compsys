@@ -4,13 +4,13 @@
 #include "simulate.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // We define all of the opcodes from the different instructions to implement
 // by reading the opcode value in the tables p. 104 & 105 in the riscv spec.
 // The values are in binary and we translate them to hex as they are shorter
 // easier to read and use for comparisons.
 
-#define OPCODE_ECALL_EBREAK 0x73
 // RV321 Base Instruction Set
 // Opcodes
 #define OPCODE_LUI 0x37
@@ -57,15 +57,17 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
         // https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
         int opcode = instruction & 0x7F;
 
-         // ecall
+        // ecall
         if (opcode == 0x73) {
             int a7 = read_register(17); 
             switch(a7) {
                 case 1:
+                    ;
                     int input_char = getchar();
                     write_register(10, input_char);
                     break;
-                case 2:
+                case 2: 
+                    ;
                     int output_char = read_register(10);
                     putchar(output_char);
                     break;
@@ -82,9 +84,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                     exit(-1);
             }
         }
-
-        
-        // RV321 Base Instruction Set
+       
         // Implement LUI
         if (opcode == OPCODE_LUI)
         {
@@ -114,7 +114,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             }
             write_register(rd, pc + 4);
             pc += imm;
-            continue; //// Skip the usual add to PC 
+            continue; // Skip the normal increment
         }
         // JALR
         if (opcode == OPCODE_JALR) {
@@ -125,8 +125,8 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 imm |= 0xFFFFF000;
             }
             write_register(rd, pc + 4);
-            pc = (read_register(rs1) + imm) & ~1U; 
-            continue; // Skip the usual add to PC 
+            pc = (read_register(rs1) + imm) & ~1U; // Clear the least significant bit
+            continue; // Skip the normal increment
         }
 
 
@@ -139,7 +139,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                         ((instruction & 0x7E000000) >> 20) | // imm[10:5]
                         ((instruction & 0x00000F00) >> 7) |  // imm[4:1]
                         ((instruction & 0x00000080) << 4);   // imm[11]
-            if (imm & 0x1000) { // Sign extend
+            if (imm & 0x1000) { // Sign extend 
                 imm |= 0xFFFFE000;
             }
             bool take_branch = false;
@@ -165,7 +165,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             }
             if (take_branch) {
                 pc += imm;
-                continue; // Skip the usual add to PC 
+                continue; // Skip normal PC increment
             }
         }
 
@@ -292,7 +292,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             uint32_t rd = (instruction >> 7) & 0x1F;
 
             switch (funct3) {
-                case 0x0: //  SUB / ADD
+                case 0x0: // ADD / SUB
                     if (funct7 == 0x20) {
                         // SUB
                         int64_t sub = (int64_t)read_register(rs1) - (int64_t)read_register(rs2);
@@ -324,7 +324,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                     uint32_t xor = read_register(rs1) ^ read_register(rs2);
                     write_register(rd, xor);
                     break;
-                case 0x5: // SRL or SRA 
+                case 0x5: // SRL / SRA 
                     if (funct7 == 0x20) {
                         // SRA
                         int32_t sra = (int32_t)read_register(rs1) >> (read_register(rs2) & 0x1F);
@@ -443,5 +443,6 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
 
     }
 
-}
+    }   
+    return 0;
 }
