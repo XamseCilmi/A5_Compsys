@@ -64,7 +64,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             uint32_t rd = (instruction >> 7) & 0x1F;
             write_register(rd, imm32_12 << 12);
         }
-        // Implement AUIPC
+
         if (opcode == OPCODE_AUIPC)
         {
             uint32_t imm32_12 = (instruction >> 12) & 0xFFFFF; // Extract the imm field (bits 12-32)
