@@ -73,7 +73,6 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             write_register(rd,(imm32_12 << 12)+pc);
         }
         
-<<<<<<< HEAD
        
         
         // Store Instructions
@@ -101,18 +100,6 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
                 break;
             default:
                 break;
-=======
-
-        // JAL
-        if (opcode == OPCODE_JAL) {
-            uint32_t rd = (instruction >> 7) & 0x1F;
-            int32_t imm = ((instruction & 0x80000000) >> 11) | // imm[20]
-                        ((instruction & 0x7FE00000) >> 20) | // imm[10:1]
-                        ((instruction & 0x00100000) >> 9) |  // imm[11]
-                        (instruction & 0x000FF000);          // imm[19:12]
-            if (imm & 0x100000) { // sign extend 
-                imm |= 0xFFE00000;
->>>>>>> origin/main
             }
             write_register(rd, pc + 4);
             pc += imm;
