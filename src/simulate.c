@@ -77,7 +77,7 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             uint32_t rd = (instruction >> 7) & 0x1F;
             write_register(rd, imm32_12 << 12);
         }
-
+        // Implement AUIPC
         if (opcode == OPCODE_AUIPC)
         {
             uint32_t imm32_12 = (instruction >> 12) & 0xFFFFF; // Extract the imm field (bits 12-32)
@@ -86,7 +86,17 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
             write_register(rd,(imm32_12 << 12)+pc);
         }
         
-
+        // Implement JAL
+        if (opcode = OPCODE_JAL)
+        {
+            uint32_t rd = (instruction >> 7) & 0x1F;
+            // Jump to Next Instruction
+            write_register(rd, pc+4);
+            // Update PC
+            uint32_t imm = ((instruction >> 20) & 0x1) << 20 | ((instruction >> 1) & 0x3FF) << 1;
+            pc += imm;
+        }
+        
         // Store Instructions
         if (opcode == OPCODE_SB_SH_SW)
         {
