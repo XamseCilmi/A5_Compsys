@@ -48,6 +48,7 @@ uint32_t read_register(int register_index) {
 
 long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE *log_file) {
     uint32_t pc = start_addr; // Program counter
+    long int instructions = 0;
     (void)as; 
 
     while (1) {
@@ -56,6 +57,33 @@ long int simulate(struct memory *mem, struct assembly *as, int start_addr, FILE 
         // https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
         int opcode = instruction & 0x7F;
 
+         // ecall
+        if (opcode == 0x73) {
+            int a7 = read_register(17); 
+            switch(a7) {
+                case 1:
+                    int input_char = getchar();
+                    write_register(10, input_char);
+                    break;
+                case 2:
+                    int output_char = read_register(10);
+                    putchar(output_char);
+                    break;
+                case 3:
+                    printf("Quitting simulation. Ran %ld instructions\n ", instructions);
+                    exit(0);
+                    break;
+                case 93:
+                    printf("Quitting simulation. Ran %ld instructions\n ", instructions);
+                    exit(0);
+                    break;
+                default:
+                    printf("Problem with system call A7 = %d \n", a7);
+                    exit(-1);
+            }
+        }
+
+        
         // RV321 Base Instruction Set
         // Implement LUI
         if (opcode == OPCODE_LUI)
